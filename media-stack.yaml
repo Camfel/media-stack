@@ -12,10 +12,7 @@ spec:
         - host: 8080
           container: 8080     # Web UI
         - host: 6881
-          container: 6881     # DHT (UDP implied by app)
-        - host: 6881
-          container: 6881
-          protocol: udp
+          container: 6881     # DHT
       volumes:
         - source: /mnt/downloads
           target: /downloads
