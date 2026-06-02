@@ -12,7 +12,11 @@ spec:
         - host: 8080
           container: 8080     # Web UI
         - host: 6881
-          container: 6881     # DHT
+          container: 6881
+          protocol: tcp       # DHT
+        - host: 6881
+          container: 6881
+          protocol: udp       # DHT
       volumes:
         - source: /mnt/downloads
           target: /downloads
