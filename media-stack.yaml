@@ -154,3 +154,19 @@ spec:
         path: /health
         port: 8096
         interval: 30s
+
+    # ── Dashboard ───────────────────────────────────────────────────
+    - name: dashboard
+      image: ghcr.io/camfel/quartermaster-gui:latest
+      restart_policy: unless-stopped
+      depends_on:
+        - jellyfin
+      ports:
+        - host: 8090
+          container: 8090
+      volumes:
+        - source: /run/quartermaster/daemon.sock
+          target: /run/quartermaster/daemon.sock
+          type: bind
+      user: "999:989"
+      network: public
