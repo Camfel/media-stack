@@ -4,19 +4,22 @@ metadata:
   name: media-stack
 spec:
   services:
-    # ── Download Client ──────────────────────────────────────────────
+    # ── Download Client (VPN) ──────────────────────────────────────
     - name: qbittorrent
       image: lscr.io/linuxserver/qbittorrent:latest
       restart_policy: unless-stopped
+      network: vpn
+      depends_on:
+        - gluetun
       ports:
         - host: 8080
-          container: 8080     # Web UI
+          container: 8080
         - host: 6881
           container: 6881
-          protocol: tcp       # DHT
+          protocol: tcp
         - host: 6881
           container: 6881
-          protocol: udp       # DHT
+          protocol: udp
       volumes:
         - source: /mnt/downloads
           target: /downloads
@@ -33,13 +36,14 @@ spec:
           value: "America/Chicago"
         - name: WEBUI_PORT
           value: "8080"
-      network: public
 
-    # ── Indexer Manager ──────────────────────────────────────────────
+    # ── Indexer Manager (VPN) ──────────────────────────────────────
     - name: prowlarr
       image: lscr.io/linuxserver/prowlarr:latest
       restart_policy: unless-stopped
+      network: vpn
       depends_on:
+        - gluetun
         - qbittorrent
       ports:
         - host: 9696
@@ -55,9 +59,8 @@ spec:
           value: "1000"
         - name: TZ
           value: "America/Chicago"
-      network: public
 
-    # ── TV Series Automation ─────────────────────────────────────────
+    # ── TV Series Automation ───────────────────────────────────────
     - name: sonarr
       image: lscr.io/linuxserver/sonarr:latest
       restart_policy: unless-stopped
@@ -86,7 +89,7 @@ spec:
           value: "America/Chicago"
       network: public
 
-    # ── Movie Automation ─────────────────────────────────────────────
+    # ── Movie Automation ───────────────────────────────────────────
     - name: radarr
       image: lscr.io/linuxserver/radarr:latest
       restart_policy: unless-stopped
@@ -115,7 +118,7 @@ spec:
           value: "America/Chicago"
       network: public
 
-    # ── Media Server ─────────────────────────────────────────────────
+    # ── Media Server ───────────────────────────────────────────────
     - name: jellyfin
       image: lscr.io/linuxserver/jellyfin:latest
       restart_policy: unless-stopped
@@ -124,9 +127,9 @@ spec:
         - radarr
       ports:
         - host: 8096
-          container: 8096     # HTTP
+          container: 8096
         - host: 8920
-          container: 8920     # HTTPS (optional)
+          container: 8920
       volumes:
         - source: /mnt/media/tv
           target: /data/tvshows
@@ -147,13 +150,10 @@ spec:
       resources:
         gpu:
           type: nvidia
-          id: all             # Hardware transcoding
+          id: all
       network: public
       healthcheck:
         type: http
         path: /health
         port: 8096
         interval: 30s
-
-    # ── Dashboard ───────────────────────────────────────────────────
-    # Dashboard is now a component — enable with:  qm enable dashboard
